@@ -1,0 +1,91 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Activity</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openAdd()" aria-label="Add transaction">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <div class="filters-bar">
+    <div class="seg-group">
+      <button class="seg" [class.active]="filterType === 'All'" (click)="setType('All')">All</button>
+      <button class="seg" [class.active]="filterType === 'Income'" (click)="setType('Income')">Income</button>
+      <button class="seg" [class.active]="filterType === 'Expense'" (click)="setType('Expense')">Expense</button>
+    </div>
+    <div class="cat-chips">
+      <button class="chip" [class.active]="filterCategoryId === null" (click)="setCategory(null)">
+        All categories
+      </button>
+      <button class="chip" *ngFor="let c of categories"
+              [class.active]="filterCategoryId === c.id"
+              [style.--chip-color]="c.color"
+              (click)="setCategory(c.id)">
+        <ion-icon [name]="c.icon"></ion-icon>
+        {{ c.name }}
+      </button>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="tx-content">
+  <ion-refresher slot="fixed" (ionRefresh)="reload($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="container">
+    <div *ngIf="loading" class="loading-state">
+      <ion-skeleton-text *ngFor="let i of [1,2,3,4,5,6]" animated
+        style="width: 100%; height: 56px; border-radius: 12px; margin-bottom: 8px;"></ion-skeleton-text>
+    </div>
+
+    <ng-container *ngIf="!loading">
+      <div class="ft-empty" *ngIf="!items.length">
+        <ion-icon name="receipt-outline"></ion-icon>
+        <h3>No transactions yet</h3>
+        <p>Tap the + button to add your first one.</p>
+        <ion-button (click)="openAdd()" shape="round">
+          <ion-icon slot="start" name="add-outline"></ion-icon>
+          Add transaction
+        </ion-button>
+      </div>
+
+      <div *ngFor="let g of groups" class="group">
+        <div class="group-head">
+          <span>{{ g.label }}</span>
+          <span class="group-total" [class.positive]="g.total > 0" [class.negative]="g.total < 0">
+            {{ g.total | money:{sign:true} }}
+          </span>
+        </div>
+        <div class="ft-card group-card">
+          <button class="tx-row" *ngFor="let t of g.items; let last = last"
+                  [class.last]="last" (click)="openEdit(t)">
+            <div class="tx-icon" [style.background]="t.categoryColor + '22'">
+              <ion-icon [name]="t.categoryIcon" [style.color]="t.categoryColor"></ion-icon>
+            </div>
+            <div class="tx-meta">
+              <div class="tx-name">{{ t.note || t.categoryName }}</div>
+              <div class="tx-sub">
+                <span>{{ t.categoryName }}</span>
+                <app-status-chip *ngIf="t.status === 'PendingApproval' || t.status === 'Rejected'"
+                                 [status]="t.status"></app-status-chip>
+              </div>
+            </div>
+            <div class="tx-amount"
+                 [class.ft-amount--income]="t.type === 'Income'"
+                 [class.ft-amount--expense]="t.type === 'Expense'">
+              {{ t.type === 'Income' ? '+' : '-' }}{{ t.amount | money:{abs:true} }}
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <ion-infinite-scroll *ngIf="items.length > 0"
+                           (ionInfinite)="loadMore($event)"
+                           [disabled]="finished">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </ng-container>
+  </div>
+</ion-content>

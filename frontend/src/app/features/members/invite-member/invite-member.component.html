@@ -1,0 +1,39 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="close()">Cancel</ion-button>
+    </ion-buttons>
+    <ion-title>Invite member</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="iv-content">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="iv-form">
+    <label class="ft-label">EMAIL</label>
+    <input class="ft-input" type="email" formControlName="email" placeholder="alex@company.com" autocomplete="off" />
+
+    <label class="ft-label">ROLE</label>
+    <div class="role-grid">
+      <button type="button" class="role-tile"
+              *ngFor="let r of roles"
+              [class.active]="form.value.role === r"
+              (click)="form.patchValue({ role: r })">
+        {{ r }}
+      </button>
+    </div>
+
+    <ng-container *ngIf="departments.length">
+      <label class="ft-label">DEPARTMENT (OPTIONAL)</label>
+      <select class="ft-input" formControlName="departmentId">
+        <option [ngValue]="null">— None —</option>
+        <option *ngFor="let d of departments" [ngValue]="d.id">{{ d.name }}</option>
+      </select>
+    </ng-container>
+
+    <ion-button expand="block" class="save-btn" type="submit"
+                [disabled]="form.invalid || saving">
+      {{ saving ? 'Inviting…' : 'Create invitation' }}
+    </ion-button>
+    <p class="iv-hint">A shareable invite link will be copied to your clipboard.</p>
+  </form>
+</ion-content>

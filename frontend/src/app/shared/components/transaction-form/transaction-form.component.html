@@ -1,0 +1,83 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss('cancel')">Cancel</ion-button>
+    </ion-buttons>
+    <ion-title>{{ existing ? 'Edit transaction' : 'Add transaction' }}</ion-title>
+    <ion-buttons slot="end" *ngIf="existing">
+      <ion-button color="danger" (click)="delete()">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="tx-form-content">
+  <div class="type-toggle">
+    <button type="button" class="seg" [class.active]="type === 'Expense'" (click)="setType('Expense')">
+      <ion-icon name="arrow-down-outline"></ion-icon> Expense
+    </button>
+    <button type="button" class="seg" [class.active]="type === 'Income'" (click)="setType('Income')">
+      <ion-icon name="arrow-up-outline"></ion-icon> Income
+    </button>
+  </div>
+
+  <form [formGroup]="form" class="tx-form">
+    <div class="amount-block">
+      <label>Amount</label>
+      <div class="amount-input">
+        <input type="number" inputmode="decimal" step="0.01" placeholder="0.00"
+               formControlName="amount" autofocus />
+      </div>
+    </div>
+
+    <div class="block">
+      <label>Category</label>
+      <div *ngIf="loadingCategories" class="loading-categories">
+        <ion-skeleton-text *ngFor="let i of [1,2,3,4,5,6,7,8]" animated style="width: 80px; height: 80px; border-radius: 14px;"></ion-skeleton-text>
+      </div>
+      <div *ngIf="!loadingCategories" class="category-grid">
+        <button type="button" class="cat-tile" *ngFor="let c of filteredCategories"
+                [class.active]="form.controls.categoryId.value === c.id"
+                [style.--cat-color]="c.color"
+                (click)="pickCategory(c.id)">
+          <span class="cat-dot"><ion-icon [name]="c.icon"></ion-icon></span>
+          <span class="cat-name">{{ c.name }}</span>
+        </button>
+      </div>
+      <div class="field-error"
+           *ngIf="form.controls.categoryId.touched && form.controls.categoryId.invalid">
+        Please select a category.
+      </div>
+    </div>
+
+    <div class="block">
+      <label for="date">Date</label>
+      <div class="text-input">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <input id="date" type="datetime-local"
+               [value]="form.controls.date.value | date:'yyyy-MM-ddTHH:mm'"
+               (change)="form.controls.date.setValue($any($event.target).value)" />
+      </div>
+    </div>
+
+    <div class="block">
+      <label for="note">Note (optional)</label>
+      <div class="text-input">
+        <ion-icon name="create-outline"></ion-icon>
+        <input id="note" type="text" formControlName="note" placeholder="e.g. Lunch with Alex" />
+      </div>
+    </div>
+  </form>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    <div class="footer-action">
+      <ion-button expand="block" class="save-btn" (click)="save()" [disabled]="saving">
+        <ion-spinner *ngIf="saving" name="dots"></ion-spinner>
+        <span *ngIf="!saving">{{ existing ? 'Save changes' : 'Add transaction' }}</span>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

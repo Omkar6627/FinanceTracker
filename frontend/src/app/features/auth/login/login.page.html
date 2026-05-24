@@ -1,0 +1,53 @@
+<ion-content class="auth-content" [fullscreen]="true">
+  <div class="auth-shell">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-mark"><ion-icon name="wallet-outline"></ion-icon></div>
+        <h1>FinanceTracker</h1>
+        <p>Welcome back. Sign in to manage your money.</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <div class="field-input">
+            <ion-icon name="mail-outline"></ion-icon>
+            <input id="email" type="email" autocomplete="email" formControlName="email"
+                   placeholder="you@example.com" />
+          </div>
+          <div class="field-error" *ngIf="form.controls.email.touched && form.controls.email.invalid">
+            Enter a valid email address.
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="field-input">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            <input id="password" [type]="showPassword ? 'text' : 'password'"
+                   autocomplete="current-password" formControlName="password"
+                   placeholder="At least 8 characters" />
+            <button type="button" class="icon-btn" (click)="togglePassword()" tabindex="-1"
+                    [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+              <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </button>
+          </div>
+          <div class="field-error" *ngIf="form.controls.password.touched && form.controls.password.invalid">
+            Password must be at least 8 characters.
+          </div>
+        </div>
+
+        <ion-button type="submit" expand="block" class="submit-btn"
+                    [disabled]="loading">
+          <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
+          <span *ngIf="!loading">Sign in</span>
+        </ion-button>
+
+        <div class="auth-footer">
+          New here?
+          <a routerLink="/login/register">Create an account</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</ion-content>

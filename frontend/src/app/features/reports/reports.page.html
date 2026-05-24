@@ -1,0 +1,78 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Reports</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="rp-content">
+  <ion-refresher slot="fixed" (ionRefresh)="reload($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="container">
+    <div *ngIf="loading" class="loading-state">
+      <ion-skeleton-text animated style="width: 100%; height: 240px; border-radius: 16px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 240px; border-radius: 16px; margin-top: 12px;"></ion-skeleton-text>
+    </div>
+
+    <ng-container *ngIf="!loading">
+      <div class="ft-card chart-card">
+        <div class="chart-header">
+          <h3>6-month trend</h3>
+          <span class="muted">Income vs Expense</span>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas #trendCanvas></canvas>
+        </div>
+      </div>
+
+      <div class="ft-card chart-card">
+        <div class="chart-header month-header">
+          <button class="nav-btn" (click)="changeMonth(-1)" aria-label="Previous">
+            <ion-icon name="chevron-forward-outline" style="transform: rotate(180deg);"></ion-icon>
+          </button>
+          <h3>{{ monthName }}</h3>
+          <button class="nav-btn" (click)="changeMonth(1)" aria-label="Next">
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </button>
+        </div>
+
+        <ng-container *ngIf="monthly as m">
+          <div class="month-totals">
+            <div class="total-cell">
+              <div class="total-label">Income</div>
+              <div class="total-value income">{{ m.totalIncome | money }}</div>
+            </div>
+            <div class="total-cell">
+              <div class="total-label">Expense</div>
+              <div class="total-value expense">{{ m.totalExpense | money }}</div>
+            </div>
+            <div class="total-cell">
+              <div class="total-label">Net</div>
+              <div class="total-value" [class.negative]="m.net < 0">{{ m.net | money }}</div>
+            </div>
+          </div>
+
+          <div *ngIf="m.expenseByCategory.length; else noExp">
+            <div class="section-sub">Expenses by category</div>
+            <div class="pie-wrap">
+              <div class="pie-canvas-wrap">
+                <canvas #pieCanvas></canvas>
+              </div>
+              <div class="pie-legend">
+                <div class="legend-item" *ngFor="let s of m.expenseByCategory">
+                  <span class="legend-dot" [style.background]="s.categoryColor"></span>
+                  <span class="legend-name">{{ s.categoryName }}</span>
+                  <span class="legend-pct">{{ s.percent | number:'1.0-0' }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noExp>
+            <div class="empty-inline">No expenses recorded this month.</div>
+          </ng-template>
+        </ng-container>
+      </div>
+    </ng-container>
+  </div>
+</ion-content>

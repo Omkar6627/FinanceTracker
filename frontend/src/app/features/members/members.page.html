@@ -1,0 +1,64 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/app/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Members</ion-title>
+    <ion-buttons slot="end" *ngIf="canInvite">
+      <ion-button (click)="openInvite()" aria-label="Invite member">
+        <ion-icon slot="icon-only" name="person-add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="mb-content">
+  <div class="container">
+    <div *ngIf="loading" class="loading-state">
+      <ion-skeleton-text *ngFor="let i of [1,2,3]" animated
+        style="width: 100%; height: 64px; border-radius: 12px; margin-bottom: 8px;"></ion-skeleton-text>
+    </div>
+
+    <ng-container *ngIf="!loading">
+      <h2 class="ft-section-title">Active members ({{ members.length }})</h2>
+      <div class="member-list">
+        <div class="member-row ft-card" *ngFor="let m of members">
+          <div class="avatar">{{ (m.fullName || m.email)[0] | uppercase }}</div>
+          <div class="member-meta">
+            <div class="member-name">
+              {{ m.fullName }}
+              <app-role-badge [role]="m.role"></app-role-badge>
+            </div>
+            <div class="member-sub">{{ m.email }}<span *ngIf="m.departmentName"> · {{ m.departmentName }}</span></div>
+          </div>
+          <div class="member-actions" *ngIf="canManage && m.role !== 'Owner'">
+            <ion-button fill="clear" size="small" (click)="changeRole(m)">Role</ion-button>
+            <ion-button fill="clear" size="small" color="danger" (click)="remove(m)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+      </div>
+
+      <ng-container *ngIf="canInvite && invitations.length">
+        <h2 class="ft-section-title">Pending invitations ({{ invitations.length }})</h2>
+        <div class="invite-list">
+          <div class="invite-row ft-card" *ngFor="let inv of invitations">
+            <div class="invite-meta">
+              <div class="invite-email">{{ inv.email }} <app-role-badge [role]="inv.role"></app-role-badge></div>
+              <div class="invite-sub">Expires {{ inv.expiresAt | date:'mediumDate' }}</div>
+            </div>
+            <div class="invite-actions">
+              <ion-button fill="clear" size="small" (click)="copyLink(inv)">
+                <ion-icon slot="icon-only" name="link-outline"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" size="small" color="danger" (click)="revoke(inv)">
+                <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</ion-content>

@@ -1,0 +1,55 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/app/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Approvals</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ap-content">
+  <div class="container">
+    <div *ngIf="loading" class="loading-state">
+      <ion-skeleton-text *ngFor="let i of [1,2,3,4]" animated
+        style="width: 100%; height: 88px; border-radius: 14px; margin-bottom: 10px;"></ion-skeleton-text>
+    </div>
+
+    <ng-container *ngIf="!loading">
+      <div class="ft-empty" *ngIf="!items.length">
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+        <h3>No pending transactions</h3>
+        <p>You're all caught up.</p>
+      </div>
+
+      <div class="ap-card ft-card" *ngFor="let t of items">
+        <div class="ap-row">
+          <div class="ap-icon" [style.background]="t.categoryColor + '22'">
+            <ion-icon [name]="t.categoryIcon" [style.color]="t.categoryColor"></ion-icon>
+          </div>
+          <div class="ap-meta">
+            <div class="ap-name">{{ t.note || t.categoryName }}</div>
+            <div class="ap-sub">
+              <span>{{ t.categoryName }}</span>
+              <span>· {{ t.submittedByName }}</span>
+            </div>
+          </div>
+          <div class="ap-amount"
+               [class.ft-amount--income]="t.type === 'Income'"
+               [class.ft-amount--expense]="t.type === 'Expense'">
+            {{ t.type === 'Income' ? '+' : '-' }}{{ t.amount | money:{abs:true} }}
+          </div>
+        </div>
+        <div class="ap-actions">
+          <ion-button fill="outline" color="danger" size="small"
+                      (click)="reject(t)" [disabled]="busyId === t.id">
+            Reject
+          </ion-button>
+          <ion-button fill="solid" color="success" size="small"
+                      (click)="approve(t)" [disabled]="busyId === t.id">
+            Approve
+          </ion-button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</ion-content>

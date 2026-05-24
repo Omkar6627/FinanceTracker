@@ -1,0 +1,175 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>
+      <div class="page-title">
+        <small>{{ greeting }},</small>
+        <span>{{ firstName }}</span>
+      </div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/app/settings" aria-label="Settings">
+        <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="dash-content">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="container">
+    <div *ngIf="loading" class="loading-state">
+      <ion-skeleton-text animated style="width: 100%; height: 160px; border-radius: 20px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 60%; height: 18px; margin-top: 24px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px; border-radius: 16px; margin-top: 12px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 80px; border-radius: 16px; margin-top: 8px;"></ion-skeleton-text>
+    </div>
+
+    <ng-container *ngIf="!loading && summary as s">
+      <div class="hero-card ft-card ft-card--lg">
+        <div class="hero-net-row">
+          <div>
+            <div class="hero-label">This month's net</div>
+            <div class="hero-amount" [class.negative]="s.netMonth < 0">
+              {{ s.netMonth | money }}
+            </div>
+          </div>
+          <div class="hero-trend">
+            <ion-icon [name]="s.netMonth >= 0 ? 'trending-up-outline' : 'trending-down-outline'"></ion-icon>
+          </div>
+        </div>
+
+        <div class="hero-split">
+          <div class="split-cell">
+            <div class="split-icon income">
+              <ion-icon name="arrow-up-outline"></ion-icon>
+            </div>
+            <div>
+              <div class="split-label">Income</div>
+              <div class="split-value">{{ s.incomeMonth | money }}</div>
+            </div>
+          </div>
+          <div class="split-divider"></div>
+          <div class="split-cell">
+            <div class="split-icon expense">
+              <ion-icon name="arrow-down-outline"></ion-icon>
+            </div>
+            <div>
+              <div class="split-label">Expense</div>
+              <div class="split-value">{{ s.expenseMonth | money }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ft-grid-2 today-grid">
+        <div class="mini-card ft-card">
+          <div class="mini-label">Today's income</div>
+          <div class="mini-value ft-amount ft-amount--income">{{ s.incomeToday | money }}</div>
+        </div>
+        <div class="mini-card ft-card">
+          <div class="mini-label">Today's expense</div>
+          <div class="mini-value ft-amount ft-amount--expense">{{ s.expenseToday | money }}</div>
+        </div>
+        <div class="mini-card ft-card">
+          <div class="mini-label">Transactions</div>
+          <div class="mini-value">{{ s.transactionCountMonth }}</div>
+        </div>
+        <div class="mini-card ft-card add-btn-card" (click)="openAdd()">
+          <div class="add-circle"><ion-icon name="add-outline"></ion-icon></div>
+          <div class="mini-value add-label">Add</div>
+        </div>
+      </div>
+
+      <div class="section-header" *ngIf="topBudgets.length">
+        <h2>Budgets</h2>
+        <a routerLink="/app/budgets">View all</a>
+      </div>
+      <div class="budgets-row" *ngIf="topBudgets.length">
+        <div class="budget-card ft-card" *ngFor="let b of topBudgets">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 80 80" class="ring">
+              <circle cx="40" cy="40" r="34" class="ring-bg"></circle>
+              <circle cx="40" cy="40" r="34" class="ring-fg"
+                      [attr.stroke]="budgetRingColor(b.percentUsed)"
+                      stroke-dasharray="213.6"
+                      [attr.stroke-dashoffset]="budgetRingDashOffset(b.percentUsed, 213.6)"></circle>
+            </svg>
+            <div class="ring-center">
+              <ion-icon [name]="b.categoryIcon" [style.color]="b.categoryColor"></ion-icon>
+            </div>
+          </div>
+          <div class="budget-meta">
+            <div class="budget-name">{{ b.categoryName }}</div>
+            <div class="budget-amount">{{ b.spentAmount | money }} of {{ b.limitAmount | money }}</div>
+            <div class="budget-pct" [style.color]="budgetRingColor(b.percentUsed)">
+              {{ b.percentUsed | number:'1.0-0' }}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header" *ngIf="s.topCategories.length">
+        <h2>Top spending</h2>
+        <a routerLink="/app/reports">Reports</a>
+      </div>
+      <div class="ft-card categories-card" *ngIf="s.topCategories.length">
+        <div class="cat-row" *ngFor="let c of s.topCategories">
+          <div class="cat-icon" [style.background]="c.categoryColor + '22'">
+            <ion-icon [name]="c.categoryIcon" [style.color]="c.categoryColor"></ion-icon>
+          </div>
+          <div class="cat-info">
+            <div class="cat-top">
+              <span class="cat-name">{{ c.categoryName }}</span>
+              <span class="cat-amount">{{ c.amount | money }}</span>
+            </div>
+            <div class="cat-bar">
+              <div class="cat-bar-fill"
+                   [style.width.%]="c.percent"
+                   [style.background]="c.categoryColor"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header" *ngIf="s.recentTransactions.length">
+        <h2>Recent</h2>
+        <a routerLink="/app/transactions">All activity</a>
+      </div>
+      <div class="ft-card recent-card" *ngIf="s.recentTransactions.length">
+        <div class="recent-row" *ngFor="let t of s.recentTransactions">
+          <div class="recent-icon" [style.background]="t.categoryColor + '22'">
+            <ion-icon [name]="t.categoryIcon" [style.color]="t.categoryColor"></ion-icon>
+          </div>
+          <div class="recent-meta">
+            <div class="recent-name">{{ t.note || t.categoryName }}</div>
+            <div class="recent-sub">{{ t.categoryName }} · {{ t.date | relativeDate }}</div>
+          </div>
+          <div class="recent-amount"
+               [class.ft-amount--income]="t.type === 'Income'"
+               [class.ft-amount--expense]="t.type === 'Expense'">
+            {{ t.type === 'Income' ? '+' : '-' }}{{ t.amount | money:{abs:true} }}
+          </div>
+        </div>
+      </div>
+
+      <div class="ft-empty" *ngIf="!s.recentTransactions.length && !s.topCategories.length">
+        <ion-icon name="wallet-outline"></ion-icon>
+        <h3>Start tracking</h3>
+        <p>Add your first transaction to see insights here.</p>
+        <ion-button (click)="openAdd()" shape="round">
+          <ion-icon slot="start" name="add-outline"></ion-icon>
+          Add transaction
+        </ion-button>
+      </div>
+    </ng-container>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="fab-add">
+    <ion-fab-button (click)="openAdd()">
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

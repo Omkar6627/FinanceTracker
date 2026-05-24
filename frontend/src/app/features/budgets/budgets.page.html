@@ -1,0 +1,90 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Budgets</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openAdd()" aria-label="Add budget">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bd-content">
+  <ion-refresher slot="fixed" (ionRefresh)="reload($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="container">
+    <div *ngIf="loading" class="loading-state">
+      <ion-skeleton-text animated style="width: 100%; height: 120px; border-radius: 20px;"></ion-skeleton-text>
+      <ion-skeleton-text *ngFor="let i of [1,2,3]" animated
+        style="width: 100%; height: 86px; border-radius: 16px; margin-top: 10px;"></ion-skeleton-text>
+    </div>
+
+    <ng-container *ngIf="!loading">
+      <div class="ft-card ft-card--lg summary-card" *ngIf="budgets.length">
+        <div class="summary-top">
+          <div>
+            <div class="summary-label">Total spent this period</div>
+            <div class="summary-amount">{{ totalSpent | money }} <span>of {{ totalLimit | money }}</span></div>
+          </div>
+          <div class="summary-pct" [style.color]="barColor(totalPct)">
+            {{ totalPct | number:'1.0-0' }}%
+          </div>
+        </div>
+        <div class="summary-bar">
+          <div class="summary-bar-fill"
+               [style.width.%]="totalPct > 100 ? 100 : totalPct"
+               [style.background]="barColor(totalPct)"></div>
+        </div>
+      </div>
+
+      <div class="ft-empty" *ngIf="!budgets.length">
+        <ion-icon name="pie-chart-outline"></ion-icon>
+        <h3>No budgets set</h3>
+        <p>Set monthly spending limits per category and we'll track your progress.</p>
+        <ion-button (click)="openAdd()" shape="round">
+          <ion-icon slot="start" name="add-outline"></ion-icon>
+          Create budget
+        </ion-button>
+      </div>
+
+      <div *ngIf="budgets.length" class="budget-list">
+        <div class="ft-card budget-item" *ngFor="let b of budgets">
+          <div class="budget-head">
+            <div class="budget-info">
+              <div class="budget-icon" [style.background]="b.categoryColor + '22'">
+                <ion-icon [name]="b.categoryIcon" [style.color]="b.categoryColor"></ion-icon>
+              </div>
+              <div>
+                <div class="budget-name">{{ b.categoryName }}</div>
+                <div class="budget-sub">{{ b.period }}</div>
+              </div>
+            </div>
+            <button class="delete-btn" (click)="confirmDelete(b)" aria-label="Delete">
+              <ion-icon name="trash-outline"></ion-icon>
+            </button>
+          </div>
+          <div class="budget-amounts">
+            <span class="amount-large">{{ b.spentAmount | money }}</span>
+            <span class="amount-of">/ {{ b.limitAmount | money }}</span>
+            <span class="amount-pct" [style.color]="barColor(b.percentUsed)">
+              {{ b.percentUsed | number:'1.0-0' }}%
+            </span>
+          </div>
+          <div class="budget-bar">
+            <div class="budget-bar-fill"
+                 [style.width.%]="b.percentUsed > 100 ? 100 : b.percentUsed"
+                 [style.background]="barColor(b.percentUsed)"></div>
+          </div>
+          <div class="budget-remaining">
+            <span *ngIf="b.remainingAmount >= 0">{{ b.remainingAmount | money }} left</span>
+            <span *ngIf="b.remainingAmount < 0" class="over">
+              {{ -b.remainingAmount | money }} over budget
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</ion-content>

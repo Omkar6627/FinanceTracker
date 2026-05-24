@@ -1,0 +1,43 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/app/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Audit log</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="au-content">
+  <div class="container">
+    <div *ngIf="loading" class="loading-state">
+      <ion-skeleton-text *ngFor="let i of [1,2,3,4,5]" animated
+        style="width: 100%; height: 56px; border-radius: 12px; margin-bottom: 8px;"></ion-skeleton-text>
+    </div>
+
+    <ng-container *ngIf="!loading">
+      <div class="ft-empty" *ngIf="!items.length">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <h3>No audit entries</h3>
+        <p>State changes will appear here in Enterprise mode.</p>
+      </div>
+
+      <div class="audit-row" *ngFor="let a of items">
+        <div class="audit-icon">
+          <ion-icon [name]="iconFor(a.action)"></ion-icon>
+        </div>
+        <div class="audit-meta">
+          <div class="audit-action">{{ labelFor(a.action) }}</div>
+          <div class="audit-sub">
+            <span>{{ a.actorName }}</span>
+            <span>· {{ a.entityType }}</span>
+            <span>· {{ a.occurredAt | date:'medium' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="load-more" *ngIf="!finished">
+        <ion-button fill="clear" size="small" (click)="loadMoreClick()">Load more</ion-button>
+      </div>
+    </ng-container>
+  </div>
+</ion-content>

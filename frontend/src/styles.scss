@@ -1,0 +1,129 @@
+:root {
+  --ion-color-primary: #6366f1;
+  --ion-color-primary-rgb: 99, 102, 241;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-shade: #5759d5;
+  --ion-color-primary-tint: #7376f3;
+
+  --ion-color-success: #10b981;
+  --ion-color-success-rgb: 16, 185, 129;
+  --ion-color-warning: #f59e0b;
+  --ion-color-warning-rgb: 245, 158, 11;
+  --ion-color-danger: #ef4444;
+  --ion-color-danger-rgb: 239, 68, 68;
+
+  --ion-background-color: #f8fafc;
+  --ion-background-color-rgb: 248, 250, 252;
+  --ion-text-color: #0f172a;
+  --ion-text-color-rgb: 15, 23, 42;
+
+  --ion-color-step-50:  #f1f5f9;
+  --ion-color-step-100: #e2e8f0;
+  --ion-color-step-150: #cbd5e1;
+  --ion-color-step-200: #94a3b8;
+
+  --ion-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+
+  --ft-surface: #ffffff;
+  --ft-surface-muted: #f1f5f9;
+  --ft-border: #e2e8f0;
+  --ft-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --ft-shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.10), 0 4px 10px -3px rgba(15, 23, 42, 0.05);
+}
+
+.dark, body.dark {
+  --ion-background-color: #0f172a;
+  --ion-background-color-rgb: 15, 23, 42;
+  --ion-text-color: #e2e8f0;
+  --ion-text-color-rgb: 226, 232, 240;
+  --ion-color-step-50:  #1e293b;
+  --ion-color-step-100: #334155;
+  --ion-color-step-150: #475569;
+  --ion-color-step-200: #94a3b8;
+  --ft-surface: #1e293b;
+  --ft-surface-muted: #0f172a;
+  --ft-border: #334155;
+}
+
+* { box-sizing: border-box; }
+
+.ft-card {
+  background: var(--ft-surface);
+  border: 1px solid var(--ft-border);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--ft-shadow);
+}
+
+.ft-card--lg {
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: var(--ft-shadow-lg);
+}
+
+.ft-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ft-amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.ft-amount--income { color: var(--ion-color-success); }
+.ft-amount--expense { color: var(--ion-color-danger); }
+
+.ft-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--ion-color-step-50);
+  color: var(--ion-text-color);
+}
+
+.ft-chip--income { background: rgba(16, 185, 129, 0.12); color: var(--ion-color-success); }
+.ft-chip--expense { background: rgba(239, 68, 68, 0.10); color: var(--ion-color-danger); }
+.ft-chip--pending { background: rgba(245, 158, 11, 0.12); color: var(--ion-color-warning); }
+
+.ft-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--ion-color-step-200);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+
+  ion-icon { font-size: 56px; opacity: 0.5; }
+  h3 { margin: 0; font-size: 18px; }
+  p { margin: 0; font-size: 14px; max-width: 280px; }
+}
+
+.ft-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .ft-grid-2 { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+}
+
+.ft-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ion-color-step-200);
+  margin: 24px 0 8px;
+}
+
+ion-content { --background: var(--ion-background-color); }
+ion-toolbar { --background: var(--ft-surface); --border-color: var(--ft-border); }

@@ -1,0 +1,130 @@
+.auth-content {
+  --background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 60%);
+}
+
+.auth-shell {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--ft-surface);
+  border-radius: 24px;
+  padding: 32px 28px;
+  box-shadow: var(--ft-shadow-lg);
+  border: 1px solid var(--ft-border);
+}
+
+.auth-brand {
+  text-align: center;
+  margin-bottom: 24px;
+
+  .brand-mark {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 12px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px -8px rgba(99, 102, 241, 0.6);
+    ion-icon { font-size: 28px; color: #fff; }
+  }
+  h1 { margin: 0; font-size: 24px; font-weight: 700; color: var(--ion-text-color); }
+  p { margin: 6px 0 0; font-size: 14px; color: var(--ion-color-step-200); }
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ion-text-color);
+  }
+}
+
+.field-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--ft-surface-muted);
+  border: 1px solid var(--ft-border);
+  border-radius: 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus-within {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+  }
+
+  ion-icon {
+    font-size: 18px;
+    color: var(--ion-color-step-200);
+    flex-shrink: 0;
+  }
+
+  input {
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 15px;
+    color: var(--ion-text-color);
+    font-family: inherit;
+    min-width: 0;
+  }
+
+  .icon-btn {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    color: var(--ion-color-step-200);
+    display: flex;
+    align-items: center;
+    ion-icon { font-size: 18px; }
+  }
+}
+
+.field-error {
+  font-size: 12px;
+  color: var(--ion-color-danger);
+}
+
+.submit-btn {
+  --border-radius: 12px;
+  --padding-top: 22px;
+  --padding-bottom: 22px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.auth-footer {
+  text-align: center;
+  font-size: 14px;
+  color: var(--ion-color-step-200);
+  margin-top: 8px;
+
+  a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+}

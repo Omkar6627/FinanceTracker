@@ -1,0 +1,112 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Settings</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="st-content">
+  <div class="container">
+    <div class="ft-card profile-card" *ngIf="auth.currentUser() as u">
+      <div class="avatar">{{ u.fullName.charAt(0).toUpperCase() }}</div>
+      <div class="profile-meta">
+        <div class="name">
+          {{ u.fullName }}
+          <app-role-badge [role]="$any(u.role)"></app-role-badge>
+        </div>
+        <div class="email">{{ u.email }}</div>
+        <div class="org">
+          <ion-icon name="wallet-outline"></ion-icon>
+          {{ u.organisationName }} · {{ u.currency }} · {{ u.organisationMode }}
+        </div>
+      </div>
+    </div>
+
+    <ng-container *ngIf="auth.isEnterprise">
+      <div class="ft-section-title">Enterprise</div>
+      <div class="ft-grid-2">
+        <a class="nav-card ft-card" routerLink="/app/approvals" *hasPermission="'transaction.approve'">
+          <div class="nav-icon warning"><ion-icon name="checkmark-done-outline"></ion-icon></div>
+          <div class="nav-meta">
+            <div class="nav-name">Approvals</div>
+            <div class="nav-sub">Review pending transactions</div>
+          </div>
+        </a>
+        <a class="nav-card ft-card" routerLink="/app/members" *hasPermission="'member.invite'">
+          <div class="nav-icon"><ion-icon name="people-outline"></ion-icon></div>
+          <div class="nav-meta">
+            <div class="nav-name">Members</div>
+            <div class="nav-sub">Invite and manage team</div>
+          </div>
+        </a>
+        <a class="nav-card ft-card" routerLink="/app/departments" *hasPermission="'department.manage'">
+          <div class="nav-icon"><ion-icon name="business-outline"></ion-icon></div>
+          <div class="nav-meta">
+            <div class="nav-name">Departments</div>
+            <div class="nav-sub">Org structure</div>
+          </div>
+        </a>
+        <a class="nav-card ft-card" routerLink="/app/audit" *hasPermission="'audit.view'">
+          <div class="nav-icon"><ion-icon name="document-text-outline"></ion-icon></div>
+          <div class="nav-meta">
+            <div class="nav-name">Audit log</div>
+            <div class="nav-sub">Every state change</div>
+          </div>
+        </a>
+      </div>
+    </ng-container>
+
+    <div class="ft-section-title">Preferences</div>
+    <div class="ft-card settings-list">
+      <div class="setting-row">
+        <div class="setting-icon">
+          <ion-icon [name]="dark ? 'moon-outline' : 'sunny-outline'"></ion-icon>
+        </div>
+        <div class="setting-meta">
+          <div class="setting-name">Dark mode</div>
+          <div class="setting-sub">Easier on the eyes at night</div>
+        </div>
+        <ion-toggle [checked]="dark" (ionChange)="toggleDark()"></ion-toggle>
+      </div>
+    </div>
+
+    <ng-container *hasPermission="'organisation.mode.switch'">
+      <div class="ft-section-title">Workspace mode</div>
+      <div class="ft-card settings-list">
+        <button class="setting-row clickable" (click)="switchMode()" [disabled]="switching">
+          <div class="setting-icon"
+               [class.danger]="auth.isEnterprise"
+               [class.success]="!auth.isEnterprise">
+            <ion-icon [name]="auth.isEnterprise ? 'person-outline' : 'people-outline'"></ion-icon>
+          </div>
+          <div class="setting-meta">
+            <div class="setting-name">
+              Switch to {{ auth.isEnterprise ? 'Individual' : 'Enterprise' }}
+            </div>
+            <div class="setting-sub">
+              {{ auth.isEnterprise
+                ? 'Disable approvals, departments, and members'
+                : 'Enable approvals, departments, and invite teammates' }}
+            </div>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+        </button>
+      </div>
+    </ng-container>
+
+    <div class="ft-section-title">Account</div>
+    <div class="ft-card settings-list">
+      <button class="setting-row clickable" (click)="logout()">
+        <div class="setting-icon danger">
+          <ion-icon name="log-out-outline"></ion-icon>
+        </div>
+        <div class="setting-meta">
+          <div class="setting-name">Sign out</div>
+          <div class="setting-sub">You can sign back in anytime</div>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+    </div>
+
+    <div class="version">FinanceTracker · v1.0</div>
+  </div>
+</ion-content>

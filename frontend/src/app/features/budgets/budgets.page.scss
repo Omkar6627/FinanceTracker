@@ -1,0 +1,112 @@
+.bd-content { --background: var(--ion-background-color); }
+
+.container {
+  padding: 12px 16px 96px;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #fff;
+  border: 0;
+}
+
+.summary-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.summary-label { font-size: 12px; opacity: 0.7; }
+.summary-amount {
+  font-size: 24px;
+  font-weight: 700;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+  span { font-size: 13px; font-weight: 400; opacity: 0.7; }
+}
+.summary-pct { font-size: 20px; font-weight: 700; }
+
+.summary-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 16px;
+
+  .summary-bar-fill { height: 100%; border-radius: 999px; transition: width 0.4s; }
+}
+
+.budget-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.budget-item {
+  padding: 16px;
+}
+
+.budget-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.budget-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.budget-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  ion-icon { font-size: 20px; }
+}
+
+.budget-name { font-size: 15px; font-weight: 600; }
+.budget-sub { font-size: 12px; color: var(--ion-color-step-200); margin-top: 2px; }
+
+.delete-btn {
+  background: transparent;
+  border: 0;
+  padding: 6px;
+  cursor: pointer;
+  color: var(--ion-color-step-200);
+  ion-icon { font-size: 18px; }
+  &:hover { color: var(--ion-color-danger); }
+}
+
+.budget-amounts {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 12px;
+  font-variant-numeric: tabular-nums;
+
+  .amount-large { font-size: 20px; font-weight: 700; }
+  .amount-of { font-size: 13px; color: var(--ion-color-step-200); }
+  .amount-pct { margin-left: auto; font-size: 14px; font-weight: 700; }
+}
+
+.budget-bar {
+  height: 8px;
+  background: var(--ft-surface-muted);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 8px;
+
+  .budget-bar-fill { height: 100%; border-radius: 999px; transition: width 0.4s; }
+}
+
+.budget-remaining {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ion-color-step-200);
+
+  .over { color: var(--ion-color-danger); font-weight: 600; }
+}

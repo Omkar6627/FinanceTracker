@@ -1,0 +1,43 @@
+# ----- .NET / Visual Studio -----
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.pdb
+*.dll
+*.exe
+*.userprefs
+*.log
+TestResults/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+publish/
+
+# Local secrets / dev DB files
+appsettings.*.local.json
+*.db
+*.db-shm
+*.db-wal
+
+# ----- Node / Angular -----
+frontend/node_modules/
+frontend/.angular/
+frontend/dist/
+frontend/coverage/
+frontend/.env
+frontend/.env.local
+frontend/npm-debug.log*
+frontend/yarn-error.log*
+
+# ----- IDE / editor -----
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ----- Misc -----
+*.tmp
+*.bak

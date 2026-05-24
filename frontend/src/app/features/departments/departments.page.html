@@ -1,0 +1,55 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/app/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Departments</ion-title>
+    <ion-buttons slot="end" *ngIf="canManage">
+      <ion-button (click)="createDepartment()" aria-label="Add department">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="dp-content">
+  <div class="container">
+    <div *ngIf="loading" class="loading-state">
+      <ion-skeleton-text *ngFor="let i of [1,2,3]" animated
+        style="width: 100%; height: 64px; border-radius: 12px; margin-bottom: 8px;"></ion-skeleton-text>
+    </div>
+
+    <ng-container *ngIf="!loading">
+      <div class="ft-empty" *ngIf="!items.length">
+        <ion-icon name="business-outline"></ion-icon>
+        <h3>No departments yet</h3>
+        <p>Create departments to scope budgets and approvals.</p>
+        <ion-button *ngIf="canManage" (click)="createDepartment()" shape="round">
+          <ion-icon slot="start" name="add-outline"></ion-icon>
+          Add department
+        </ion-button>
+      </div>
+
+      <div class="dept-row ft-card" *ngFor="let d of items">
+        <div class="dept-icon">
+          <ion-icon name="business-outline"></ion-icon>
+        </div>
+        <div class="dept-meta">
+          <div class="dept-name">{{ d.name }}</div>
+          <div class="dept-sub">
+            {{ d.memberCount }} member<span *ngIf="d.memberCount !== 1">s</span>
+            <span *ngIf="d.managerName"> · Manager: {{ d.managerName }}</span>
+          </div>
+        </div>
+        <div class="dept-actions" *ngIf="canManage">
+          <ion-button fill="clear" size="small" (click)="rename(d)">
+            <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+          </ion-button>
+          <ion-button fill="clear" size="small" color="danger" (click)="remove(d)">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</ion-content>
