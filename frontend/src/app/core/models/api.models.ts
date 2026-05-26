@@ -179,6 +179,68 @@ export interface ApiError {
   errors?: string[];
 }
 
+export interface CsvRowError {
+  row: number;
+  message: string;
+}
+
+export interface CsvImportResult {
+  totalRows: number;
+  imported: number;
+  failed: number;
+  committed: boolean;
+  errors: CsvRowError[];
+}
+
+export interface FxRates {
+  base: string;
+  date: string;
+  rates: Record<string, number>;
+}
+
+export type RecurrenceFrequency = 'Daily' | 'Weekly' | 'Monthly';
+
+export interface RecurringRule {
+  id: string;
+  categoryId: string;
+  categoryName: string;
+  categoryIcon: string;
+  categoryColor: string;
+  accountId?: string | null;
+  accountName?: string | null;
+  amount: number;
+  type: TxType;
+  note: string;
+  frequency: RecurrenceFrequency;
+  startDate: string;
+  nextRunDate: string;
+  endDate?: string | null;
+  isActive: boolean;
+  lastRunAt?: string | null;
+}
+
+export interface CreateRecurringRule {
+  categoryId: string;
+  accountId?: string | null;
+  amount: number;
+  type: TxType;
+  note?: string | null;
+  frequency: RecurrenceFrequency;
+  startDate: string;
+  endDate?: string | null;
+}
+
+export interface UpdateRecurringRule {
+  categoryId: string;
+  accountId?: string | null;
+  amount: number;
+  type: TxType;
+  note?: string | null;
+  frequency: RecurrenceFrequency;
+  endDate?: string | null;
+  isActive: boolean;
+}
+
 // ------- Phase 2 enterprise types -------
 
 export type MemberRole = 'Owner' | 'Admin' | 'Manager' | 'Member' | 'Viewer';

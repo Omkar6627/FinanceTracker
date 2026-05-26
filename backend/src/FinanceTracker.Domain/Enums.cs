@@ -67,3 +67,10 @@ public enum InvitationStatus
     Expired = 2,
     Revoked = 3
 }
+
+public enum RecurrenceFrequency
+{
+    Daily = 0,
+    Weekly = 1,
+    Monthly = 2
+}

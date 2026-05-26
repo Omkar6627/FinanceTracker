@@ -61,3 +61,12 @@ public record TransactionQuery(
     int PageSize = 25);
 
 public record RejectTransactionRequest(string Reason);
+
+public record CsvRowError(int Row, string Message);
+
+public record CsvImportResult(
+    int TotalRows,
+    int Imported,
+    int Failed,
+    bool Committed,
+    IReadOnlyList<CsvRowError> Errors);

@@ -39,7 +39,25 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ISeedService, SeedService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
+        services.AddScoped<IRecurringMaterializer, RecurringMaterializer>();
+        services.AddScoped<IReportPdfService, ReportPdfService>();
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         services.AddHttpContextAccessor();
+
+        services.AddHttpClient<IFxRateService, FrankfurterFxService>(c =>
+        {
+            c.BaseAddress = new Uri("https://api.frankfurter.app/");
+            c.Timeout = TimeSpan.FromSeconds(8);
+        });
+
+        if (config.GetValue("Recurring:Enabled", true))
+        {
+            var intervalSeconds = config.GetValue("Recurring:IntervalSeconds", 3600);
+            services.AddHostedService(sp => new RecurringWorker(
+                sp.GetRequiredService<IServiceScopeFactory>(),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RecurringWorker>>(),
+                TimeSpan.FromSeconds(Math.Max(15, intervalSeconds))));
+        }
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>

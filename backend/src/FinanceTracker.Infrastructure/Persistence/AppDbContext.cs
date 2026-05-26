@@ -24,6 +24,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<Invitation> Invitations => Set<Invitation>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<RecurringTransaction> RecurringTransactions => Set<RecurringTransaction>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -136,6 +137,21 @@ public class AppDbContext : DbContext, IAppDbContext
             e.Property(x => x.EntityType).HasMaxLength(60).IsRequired();
             e.HasIndex(x => new { x.OrganisationId, x.OccurredAt });
             e.HasQueryFilter(a => _current.OrganisationId == null || a.OrganisationId == _current.OrganisationId);
+        });
+
+        b.Entity<RecurringTransaction>(e =>
+        {
+            e.ToTable("recurring_transactions");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Amount).HasColumnType("decimal(15,2)");
+            e.Property(x => x.Note).HasMaxLength(500);
+            e.Property(x => x.Type).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.Frequency).HasConversion<string>().HasMaxLength(20);
+            e.HasIndex(x => new { x.OrganisationId, x.IsActive });
+            e.HasIndex(x => new { x.IsActive, x.NextRunDate });
+            e.HasOne<Category>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Account>().WithMany().HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.SetNull);
+            e.HasQueryFilter(r => _current.OrganisationId == null || r.OrganisationId == _current.OrganisationId);
         });
     }
 }

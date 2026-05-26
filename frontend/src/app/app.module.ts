@@ -24,7 +24,9 @@ import {
   personOutline, pieChartOutline, receiptOutline, removeCircleOutline, restaurantOutline,
   returnUpBackOutline, schoolOutline, settingsOutline, statsChartOutline, sunnyOutline,
   swapHorizontalOutline, syncOutline, trashOutline, trendingDownOutline, trendingUpOutline,
-  tvOutline, walletOutline, eyeOutline, eyeOffOutline, checkmarkCircleOutline
+  tvOutline, walletOutline, eyeOutline, eyeOffOutline, checkmarkCircleOutline,
+  downloadOutline, cloudUploadOutline,
+  repeatOutline, playOutline, pauseOutline, playCircleOutline
 } from 'ionicons/icons';
 
 addIcons({
@@ -55,6 +57,9 @@ addIcons({
   'close-circle-outline': closeCircleOutline, 'document-text-outline': documentTextOutline,
   'information-circle-outline': informationCircleOutline, 'link-outline': linkOutline,
   'people-outline': peopleOutline, 'person-add-outline': personAddOutline,
+  'download-outline': downloadOutline, 'cloud-upload-outline': cloudUploadOutline,
+  'repeat-outline': repeatOutline, 'play-outline': playOutline,
+  'pause-outline': pauseOutline, 'play-circle-outline': playCircleOutline,
 });
 
 @NgModule({

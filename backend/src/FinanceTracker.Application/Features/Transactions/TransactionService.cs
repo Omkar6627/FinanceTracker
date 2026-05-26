@@ -1,3 +1,4 @@
+using System.Text;
 using FinanceTracker.Application.Abstractions;
 using FinanceTracker.Application.Common;
 using FinanceTracker.Domain;
@@ -17,6 +18,8 @@ public interface ITransactionService
     Task<Result> DeleteAsync(Guid id, CancellationToken ct = default);
     Task<Result<TransactionDto>> ApproveAsync(Guid id, CancellationToken ct = default);
     Task<Result<TransactionDto>> RejectAsync(Guid id, RejectTransactionRequest req, CancellationToken ct = default);
+    Task<Result<string>> ExportCsvAsync(TransactionQuery query, CancellationToken ct = default);
+    Task<Result<CsvImportResult>> ImportCsvAsync(string csvContent, bool commit, CancellationToken ct = default);
 }
 
 public class TransactionService : ITransactionService
@@ -243,6 +246,125 @@ public class TransactionService : ITransactionService
         {
             return Result<TransactionDto>.Validation(ex.Message);
         }
+    }
+
+    public async Task<Result<string>> ExportCsvAsync(TransactionQuery query, CancellationToken ct = default)
+    {
+        if (!_current.IsAuthenticated) return Result<string>.Unauthorized();
+
+        var q = _db.Transactions.AsNoTracking().AsQueryable();
+        if (query.From.HasValue) q = q.Where(t => t.Date >= query.From.Value);
+        if (query.To.HasValue) q = q.Where(t => t.Date <= query.To.Value);
+        if (query.CategoryId.HasValue) q = q.Where(t => t.CategoryId == query.CategoryId.Value);
+        if (!string.IsNullOrWhiteSpace(query.Type) && Enum.TryParse<TransactionType>(query.Type, true, out var ty))
+            q = q.Where(x => x.Type == ty);
+        if (!string.IsNullOrWhiteSpace(query.Status) && Enum.TryParse<TransactionStatus>(query.Status, true, out var st))
+            q = q.Where(x => x.Status == st);
+
+        var rows = await (
+            from tr in q.OrderByDescending(x => x.Date).ThenByDescending(x => x.CreatedAt)
+            join c in _db.Categories on tr.CategoryId equals c.Id
+            select new { tr.Date, Type = tr.Type.ToString(), Category = c.Name, tr.Amount, Status = tr.Status.ToString(), tr.Note }
+        ).ToListAsync(ct);
+
+        var sb = new StringBuilder();
+        sb.Append(Csv.Row("Date", "Type", "Category", "Amount", "Status", "Note")).Append('\n');
+        foreach (var r in rows)
+            sb.Append(Csv.Row(
+                r.Date.ToString("yyyy-MM-dd"),
+                r.Type, r.Category,
+                r.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                r.Status, r.Note)).Append('\n');
+
+        return Result<string>.Success(sb.ToString());
+    }
+
+    public async Task<Result<CsvImportResult>> ImportCsvAsync(string csvContent, bool commit, CancellationToken ct = default)
+    {
+        if (!_current.IsAuthenticated || _current.UserId is null || _current.OrganisationId is null)
+            return Result<CsvImportResult>.Unauthorized();
+        if (_current.Role is null || !_perms.Can(_current.Role.Value, Permissions.TransactionCreate))
+            return Result<CsvImportResult>.Forbidden();
+
+        var parsed = Csv.Parse(csvContent ?? string.Empty);
+        if (parsed.Count == 0)
+            return Result<CsvImportResult>.Validation("CSV is empty");
+
+        var header = parsed[0].Select(h => h.Trim().ToLowerInvariant()).ToList();
+        int Col(string name) => header.IndexOf(name);
+        var iDate = Col("date");
+        var iType = Col("type");
+        var iCategory = Col("category");
+        var iAmount = Col("amount");
+        var iNote = Col("note");
+        if (iDate < 0 || iType < 0 || iCategory < 0 || iAmount < 0)
+            return Result<CsvImportResult>.Validation("CSV must have Date, Type, Category and Amount columns");
+
+        var org = await _db.Organisations.IgnoreQueryFilters()
+            .FirstAsync(o => o.Id == _current.OrganisationId.Value, ct);
+
+        Guid? departmentId = null;
+        if (org.Mode == OrganisationMode.Enterprise)
+        {
+            var member = await _db.OrganisationMembers
+                .FirstOrDefaultAsync(m => m.OrganisationId == org.Id && m.UserId == _current.UserId.Value, ct);
+            departmentId = member?.DepartmentId;
+        }
+
+        var categories = await _db.Categories.AsNoTracking()
+            .ToDictionaryAsync(c => c.Name.ToLowerInvariant(), c => c.Id, ct);
+
+        var errors = new List<CsvRowError>();
+        var toAdd = new List<Transaction>();
+
+        for (var r = 1; r < parsed.Count; r++)
+        {
+            var line = r + 1; // 1-based, header is line 1
+            var cells = parsed[r];
+
+            string Get(int idx) => idx >= 0 && idx < cells.Count ? cells[idx].Trim() : string.Empty;
+
+            var typeRaw = Get(iType);
+            if (!Enum.TryParse<TransactionType>(typeRaw, true, out var type))
+            { errors.Add(new CsvRowError(line, $"Invalid type '{typeRaw}'")); continue; }
+
+            var catRaw = Get(iCategory);
+            if (!categories.TryGetValue(catRaw.ToLowerInvariant(), out var categoryId))
+            { errors.Add(new CsvRowError(line, $"Unknown category '{catRaw}'")); continue; }
+
+            var amountRaw = Get(iAmount);
+            if (!decimal.TryParse(amountRaw, System.Globalization.NumberStyles.Number,
+                    System.Globalization.CultureInfo.InvariantCulture, out var amount) || amount <= 0m)
+            { errors.Add(new CsvRowError(line, $"Invalid amount '{amountRaw}'")); continue; }
+
+            var dateRaw = Get(iDate);
+            if (!DateTimeOffset.TryParse(dateRaw, System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.AssumeUniversal, out var date))
+            { errors.Add(new CsvRowError(line, $"Invalid date '{dateRaw}'")); continue; }
+
+            try
+            {
+                toAdd.Add(Transaction.Create(
+                    org.Id, _current.UserId.Value, categoryId, null,
+                    amount, type, Get(iNote), date, org.Mode, departmentId, TransactionSource.Csv));
+            }
+            catch (DomainException ex)
+            {
+                errors.Add(new CsvRowError(line, ex.Message));
+            }
+        }
+
+        var dataRows = parsed.Count - 1;
+        if (commit && toAdd.Count > 0)
+        {
+            _db.Transactions.AddRange(toAdd);
+            await _db.SaveChangesAsync(ct);
+            if (org.Mode == OrganisationMode.Enterprise)
+                await _audit.LogAsync("transaction.imported", "Transaction", org.Id, null, new { Count = toAdd.Count, Source = "Csv" }, ct);
+        }
+
+        return Result<CsvImportResult>.Success(new CsvImportResult(
+            dataRows, commit ? toAdd.Count : 0, errors.Count, commit, errors));
     }
 
     private IQueryable<TransactionDto> ProjectDtoQuery()

@@ -55,6 +55,20 @@
       </div>
     </ng-container>
 
+    <div class="ft-section-title">Tools</div>
+    <div class="ft-card settings-list">
+      <button class="setting-row clickable" routerLink="/app/recurring">
+        <div class="setting-icon">
+          <ion-icon name="repeat-outline"></ion-icon>
+        </div>
+        <div class="setting-meta">
+          <div class="setting-name">Recurring transactions</div>
+          <div class="setting-sub">Automate subscriptions, salary, rent</div>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+    </div>
+
     <div class="ft-section-title">Preferences</div>
     <div class="ft-card settings-list">
       <div class="setting-row">
@@ -66,6 +80,19 @@
           <div class="setting-sub">Easier on the eyes at night</div>
         </div>
         <ion-toggle [checked]="dark" (ionChange)="toggleDark()"></ion-toggle>
+      </div>
+      <div class="setting-row">
+        <div class="setting-icon">
+          <ion-icon name="cash-outline"></ion-icon>
+        </div>
+        <div class="setting-meta">
+          <div class="setting-name">Display currency</div>
+          <div class="setting-sub">Convert amounts for viewing ({{ auth.currentUser()?.currency }} base)</div>
+        </div>
+        <ion-select interface="popover" [value]="displayCurrency"
+                    (ionChange)="onDisplayCurrencyChange($any($event.detail.value))">
+          <ion-select-option *ngFor="let c of currencyList" [value]="c">{{ c }}</ion-select-option>
+        </ion-select>
       </div>
     </div>
 

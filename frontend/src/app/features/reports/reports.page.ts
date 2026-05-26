@@ -25,6 +25,7 @@ export class ReportsPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('pieCanvas') pieCanvas!: ElementRef<HTMLCanvasElement>;
 
   loading = true;
+  downloadingPdf = false;
   monthly: MonthlyReport | null = null;
   trend: TrendReport | null = null;
 
@@ -152,6 +153,22 @@ export class ReportsPage implements OnInit, AfterViewInit, OnDestroy {
           },
         },
       },
+    });
+  }
+
+  downloadPdf(): void {
+    this.downloadingPdf = true;
+    this.api.downloadMonthlyPdf(this.year, this.month).subscribe({
+      next: (blob) => {
+        this.downloadingPdf = false;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `finance-report-${this.year}-${String(this.month).padStart(2, '0')}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => (this.downloadingPdf = false),
     });
   }
 

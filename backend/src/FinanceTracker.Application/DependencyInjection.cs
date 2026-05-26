@@ -6,6 +6,7 @@ using FinanceTracker.Application.Features.Categories;
 using FinanceTracker.Application.Features.Departments;
 using FinanceTracker.Application.Features.Members;
 using FinanceTracker.Application.Features.Organisations;
+using FinanceTracker.Application.Features.Recurring;
 using FinanceTracker.Application.Features.Reports;
 using FinanceTracker.Application.Features.Transactions;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ITransactionService, TransactionService>();
+        services.AddScoped<IRecurringService, RecurringService>();
         services.AddScoped<IBudgetService, BudgetService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IOrganisationService, OrganisationService>();

@@ -86,12 +86,14 @@ app.MapGet("/api/v1/health", () => Results.Ok(new { status = "ok", time = DateTi
 app.MapAuthEndpoints();
 app.MapCategoryEndpoints();
 app.MapTransactionEndpoints();
+app.MapRecurringEndpoints();
 app.MapBudgetEndpoints();
 app.MapReportEndpoints();
 app.MapOrganisationEndpoints();
 app.MapDepartmentEndpoints();
 app.MapMemberEndpoints();
 app.MapAuditEndpoints();
+app.MapFxEndpoints();
 
 app.Run();
 

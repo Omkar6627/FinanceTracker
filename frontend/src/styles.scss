@@ -127,3 +127,9 @@
 
 ion-content { --background: var(--ion-background-color); }
 ion-toolbar { --background: var(--ft-surface); --border-color: var(--ft-border); }
+
+.csv-import-alert .alert-message {
+  white-space: pre-line;
+  max-height: 50vh;
+  overflow-y: auto;
+}

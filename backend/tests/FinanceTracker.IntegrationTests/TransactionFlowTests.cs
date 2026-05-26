@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using FinanceTracker.Application.Features.Auth;
 using FinanceTracker.Application.Features.Budgets;
 using FinanceTracker.Application.Features.Categories;
@@ -133,5 +134,100 @@ public class TransactionFlowTests : IClassFixture<TestWebApp>
         var resp = await http.PostAsJsonAsync("/api/v1/transactions",
             new CreateTransactionRequest(cat.Id, null, -10m, "Expense", null, DateTimeOffset.UtcNow));
         resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ExportCsv_ReturnsHeaderAndRows()
+    {
+        var http = await RegisterClientAsync();
+        var cats = (await http.GetFromJsonAsync<List<CategoryDto>>("/api/v1/categories"))!;
+        var cat = cats.First(c => c.Type == "Expense");
+        await http.PostAsJsonAsync("/api/v1/transactions",
+            new CreateTransactionRequest(cat.Id, null, 42.50m, "Expense", "Lunch, with comma", DateTimeOffset.Parse("2026-05-01T00:00:00Z")));
+
+        var resp = await http.GetAsync("/api/v1/transactions/export.csv");
+        resp.EnsureSuccessStatusCode();
+        resp.Content.Headers.ContentType!.MediaType.Should().Be("text/csv");
+        var csv = await resp.Content.ReadAsStringAsync();
+
+        csv.Should().StartWith("Date,Type,Category,Amount,Status,Note");
+        csv.Should().Contain("2026-05-01");
+        csv.Should().Contain("42.50");
+        csv.Should().Contain("\"Lunch, with comma\""); // comma field is quoted
+    }
+
+    [Fact]
+    public async Task ImportCsv_DryRun_ValidatesWithoutSaving()
+    {
+        var http = await RegisterClientAsync();
+        var cats = (await http.GetFromJsonAsync<List<CategoryDto>>("/api/v1/categories"))!;
+        var expense = cats.First(c => c.Type == "Expense");
+
+        var csv = $"Date,Type,Category,Amount,Note\n2026-05-02,Expense,{expense.Name},10.00,Coffee\nbaddate,Expense,{expense.Name},5,Bad\n2026-05-03,Expense,NoSuchCategory,5,Bad";
+        var result = await PostCsvAsync(http, csv, commit: false);
+
+        result.TotalRows.Should().Be(3);
+        result.Imported.Should().Be(0);
+        result.Failed.Should().Be(2);
+        result.Committed.Should().BeFalse();
+
+        var list = await http.GetFromJsonAsync<TransactionListResponse>("/api/v1/transactions");
+        list!.Total.Should().Be(0); // nothing persisted on dry run
+    }
+
+    [Fact]
+    public async Task ImportCsv_Commit_PersistsValidRows()
+    {
+        var http = await RegisterClientAsync();
+        var cats = (await http.GetFromJsonAsync<List<CategoryDto>>("/api/v1/categories"))!;
+        var expense = cats.First(c => c.Type == "Expense");
+        var income = cats.First(c => c.Type == "Income");
+
+        var csv = $"Date,Type,Category,Amount,Note\n2026-05-02,Expense,{expense.Name},10.00,Coffee\n2026-05-04,Income,{income.Name},500,Freelance\n2026-05-05,Expense,Unknown,9,skip";
+        var result = await PostCsvAsync(http, csv, commit: true);
+
+        result.Imported.Should().Be(2);
+        result.Failed.Should().Be(1);
+        result.Committed.Should().BeTrue();
+
+        var list = await http.GetFromJsonAsync<TransactionListResponse>("/api/v1/transactions");
+        list!.Total.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task MonthlyPdf_ReturnsValidPdf()
+    {
+        var http = await RegisterClientAsync();
+        var cats = (await http.GetFromJsonAsync<List<CategoryDto>>("/api/v1/categories"))!;
+        var cat = cats.First(c => c.Type == "Expense");
+        await http.PostAsJsonAsync("/api/v1/transactions",
+            new CreateTransactionRequest(cat.Id, null, 75m, "Expense", "Books", DateTimeOffset.Parse("2026-05-10T00:00:00Z")));
+
+        var resp = await http.GetAsync("/api/v1/reports/monthly.pdf?year=2026&month=5");
+        resp.EnsureSuccessStatusCode();
+        resp.Content.Headers.ContentType!.MediaType.Should().Be("application/pdf");
+        var bytes = await resp.Content.ReadAsByteArrayAsync();
+        bytes.Length.Should().BeGreaterThan(1000);
+        // PDF magic number "%PDF"
+        System.Text.Encoding.ASCII.GetString(bytes, 0, 4).Should().Be("%PDF");
+    }
+
+    [Fact]
+    public async Task MonthlyPdf_InvalidMonth_ReturnsBadRequest()
+    {
+        var http = await RegisterClientAsync();
+        var resp = await http.GetAsync("/api/v1/reports/monthly.pdf?year=2026&month=13");
+        resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    private static async Task<CsvImportResult> PostCsvAsync(HttpClient http, string csv, bool commit)
+    {
+        using var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(Encoding.UTF8.GetBytes(csv));
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("text/csv");
+        content.Add(fileContent, "file", "import.csv");
+        var resp = await http.PostAsync($"/api/v1/transactions/import/csv?commit={commit.ToString().ToLower()}", content);
+        resp.EnsureSuccessStatusCode();
+        return (await resp.Content.ReadFromJsonAsync<CsvImportResult>())!;
     }
 }

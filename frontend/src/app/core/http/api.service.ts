@@ -10,8 +10,13 @@ import {
   ChangeRoleRequest,
   CreateBudgetRequest,
   CreateDepartmentRequest,
+  CreateRecurringRule,
   CreateTransactionRequest,
+  CsvImportResult,
   DashboardSummary,
+  FxRates,
+  RecurringRule,
+  UpdateRecurringRule,
   DepartmentDto,
   DepartmentSummary,
   InvitationDto,
@@ -88,6 +93,48 @@ export class ApiService {
     return this.http.delete<void>(`${this.base}/transactions/${id}`);
   }
 
+  exportTransactionsCsv(opts: { from?: string; to?: string; categoryId?: string; type?: string; status?: string } = {}): Observable<Blob> {
+    let params = new HttpParams();
+    Object.entries(opts).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') params = params.set(k, String(v));
+    });
+    return this.http.get(`${this.base}/transactions/export.csv`, { params, responseType: 'blob' });
+  }
+
+  importTransactionsCsv(file: File, commit: boolean): Observable<CsvImportResult> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    const params = new HttpParams().set('commit', String(commit));
+    return this.http.post<CsvImportResult>(`${this.base}/transactions/import/csv`, form, { params });
+  }
+
+  // -------- Recurring --------
+  listRecurring(): Observable<RecurringRule[]> {
+    return this.http.get<RecurringRule[]>(`${this.base}/recurring`);
+  }
+
+  createRecurring(body: CreateRecurringRule): Observable<RecurringRule> {
+    return this.http.post<RecurringRule>(`${this.base}/recurring`, body);
+  }
+
+  updateRecurring(id: string, body: UpdateRecurringRule): Observable<RecurringRule> {
+    return this.http.put<RecurringRule>(`${this.base}/recurring/${id}`, body);
+  }
+
+  deleteRecurring(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/recurring/${id}`);
+  }
+
+  runRecurring(id: string): Observable<RecurringRule> {
+    return this.http.post<RecurringRule>(`${this.base}/recurring/${id}/run`, {});
+  }
+
+  // -------- FX --------
+  getFxRates(baseCurrency: string): Observable<FxRates> {
+    const params = new HttpParams().set('base', baseCurrency);
+    return this.http.get<FxRates>(`${this.base}/fx/rates`, { params });
+  }
+
   listBudgets(): Observable<Budget[]> {
     return this.http.get<Budget[]>(`${this.base}/budgets`);
   }
@@ -111,6 +158,11 @@ export class ApiService {
   getMonthly(year: number, month: number): Observable<MonthlyReport> {
     const params = new HttpParams().set('year', year).set('month', month);
     return this.http.get<MonthlyReport>(`${this.base}/reports/monthly`, { params });
+  }
+
+  downloadMonthlyPdf(year: number, month: number): Observable<Blob> {
+    const params = new HttpParams().set('year', year).set('month', month);
+    return this.http.get(`${this.base}/reports/monthly.pdf`, { params, responseType: 'blob' });
   }
 
   getTrends(months = 6): Observable<TrendReport> {

@@ -1,0 +1,80 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-button (click)="dismiss()">Cancel</ion-button></ion-buttons>
+    <ion-title>New recurring</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="rf-content">
+  <form [formGroup]="form" class="rf-form">
+    <div class="block">
+      <label>Type</label>
+      <div class="type-toggle">
+        <button type="button" class="seg" [class.active]="form.controls.type.value === 'Expense'"
+                (click)="setType('Expense')">Expense</button>
+        <button type="button" class="seg" [class.active]="form.controls.type.value === 'Income'"
+                (click)="setType('Income')">Income</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <label>Category</label>
+      <div *ngIf="loading" class="cat-grid">
+        <ion-skeleton-text *ngFor="let i of [1,2,3,4,5,6]" animated style="width: 80px; height: 80px; border-radius: 14px;"></ion-skeleton-text>
+      </div>
+      <div *ngIf="!loading" class="cat-grid">
+        <button type="button" class="cat-tile" *ngFor="let c of categories"
+                [class.active]="form.controls.categoryId.value === c.id"
+                [style.--cat-color]="c.color"
+                (click)="form.controls.categoryId.setValue(c.id)">
+          <span class="cat-dot"><ion-icon [name]="c.icon"></ion-icon></span>
+          <span class="cat-name">{{ c.name }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="block">
+      <label>Amount</label>
+      <div class="amount-input">
+        <input type="number" inputmode="decimal" step="0.01" placeholder="0.00" formControlName="amount" />
+      </div>
+    </div>
+
+    <div class="block">
+      <label>Repeats</label>
+      <div class="freq-toggle">
+        <button type="button" class="seg" *ngFor="let f of frequencies"
+                [class.active]="form.controls.frequency.value === f"
+                (click)="form.controls.frequency.setValue(f)">{{ f }}</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <label>Starts</label>
+      <ion-datetime-button datetime="startDate"></ion-datetime-button>
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime id="startDate" presentation="date" formControlName="startDate"></ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </div>
+
+    <div class="block">
+      <label>Note (optional)</label>
+      <div class="amount-input">
+        <input type="text" placeholder="e.g. Netflix subscription" formControlName="note" maxlength="120" />
+      </div>
+    </div>
+  </form>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    <div class="footer-action">
+      <ion-button expand="block" class="save-btn" (click)="save()" [disabled]="saving">
+        <ion-spinner *ngIf="saving" name="dots"></ion-spinner>
+        <span *ngIf="!saving">Create recurring</span>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

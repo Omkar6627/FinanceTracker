@@ -15,6 +15,7 @@ public class TestWebApp : WebApplicationFactory<Program>
         builder.UseEnvironment("Development");
         builder.UseSetting("Database:UseInMemory", "true");
         builder.UseSetting("Jwt:SigningKey", "INTEGRATION-TEST-SIGNING-KEY-AT-LEAST-32-CHARS-LONG");
+        builder.UseSetting("Recurring:Enabled", "false"); // tests drive the materializer directly
 
         builder.ConfigureServices(services =>
         {

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
 import { AuthService } from '../../core/auth/auth.service';
+import { CurrencyService } from '../../core/currency/currency.service';
 import { ApiService } from '../../core/http/api.service';
 
 const THEME_KEY = 'ft.theme';
@@ -16,13 +17,31 @@ export class SettingsPage implements OnInit {
   dark = false;
   switching = false;
 
+  readonly currencyOptions = ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'AUD', 'CAD', 'SGD', 'AED', 'CHF'];
+
   constructor(
     public auth: AuthService,
+    public currency: CurrencyService,
     private router: Router,
     private alert: AlertController,
     private api: ApiService,
     private toast: ToastController,
   ) {}
+
+  get displayCurrency(): string {
+    return this.currency.effectiveCurrency();
+  }
+
+  get currencyList(): string[] {
+    const base = this.currency.base();
+    return this.currencyOptions.includes(base) ? this.currencyOptions : [base, ...this.currencyOptions];
+  }
+
+  onDisplayCurrencyChange(cur: string): void {
+    if (cur && cur !== this.currency.effectiveCurrency()) {
+      this.currency.setDisplayCurrency(cur);
+    }
+  }
 
   ngOnInit(): void {
     const saved = localStorage.getItem(THEME_KEY);

@@ -1,0 +1,75 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/app/settings" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>Recurring</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openAdd()" aria-label="Add recurring">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="rc-content">
+  <ion-refresher slot="fixed" (ionRefresh)="reload($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="container">
+    <div *ngIf="loading" class="loading-state">
+      <ion-skeleton-text *ngFor="let i of [1,2,3]" animated
+        style="width: 100%; height: 84px; border-radius: 14px; margin-bottom: 12px;"></ion-skeleton-text>
+    </div>
+
+    <ng-container *ngIf="!loading">
+      <div class="ft-empty" *ngIf="!rules.length">
+        <ion-icon name="repeat-outline"></ion-icon>
+        <h3>No recurring transactions</h3>
+        <p>Automate subscriptions, salary, rent and more.</p>
+        <ion-button (click)="openAdd()" shape="round">
+          <ion-icon slot="start" name="add-outline"></ion-icon>
+          Add recurring
+        </ion-button>
+      </div>
+
+      <div class="ft-card rule-card" *ngFor="let r of rules" [class.paused]="!r.isActive">
+        <div class="rule-icon" [style.background]="r.categoryColor + '22'">
+          <ion-icon [name]="r.categoryIcon" [style.color]="r.categoryColor"></ion-icon>
+        </div>
+        <div class="rule-meta">
+          <div class="rule-name">{{ r.note || r.categoryName }}</div>
+          <div class="rule-sub">
+            <span class="ft-chip">{{ r.frequency }}</span>
+            <span>{{ r.categoryName }}</span>
+            <span *ngIf="!r.isActive" class="paused-tag">Paused</span>
+          </div>
+          <div class="rule-next" *ngIf="r.isActive">Next: {{ r.nextRunDate | date:'mediumDate' }}</div>
+          <div class="rule-next muted" *ngIf="!r.isActive">Paused</div>
+        </div>
+        <div class="rule-right">
+          <div class="rule-amount"
+               [class.ft-amount--income]="r.type === 'Income'"
+               [class.ft-amount--expense]="r.type === 'Expense'">
+            {{ r.type === 'Income' ? '+' : '-' }}{{ r.amount | money:{abs:true} }}
+          </div>
+          <div class="rule-actions">
+            <ion-button fill="clear" size="small" [disabled]="busyId === r.id || !r.isActive"
+                        (click)="runNow(r)" aria-label="Run now">
+              <ion-icon slot="icon-only" name="play-outline"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" size="small" [disabled]="busyId === r.id"
+                        (click)="togglePause(r)" [attr.aria-label]="r.isActive ? 'Pause' : 'Resume'">
+              <ion-icon slot="icon-only" [name]="r.isActive ? 'pause-outline' : 'play-circle-outline'"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" size="small" color="danger" [disabled]="busyId === r.id"
+                        (click)="confirmDelete(r)" aria-label="Delete">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</ion-content>

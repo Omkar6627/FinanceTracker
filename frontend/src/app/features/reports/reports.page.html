@@ -1,6 +1,12 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-title>Reports</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="downloadPdf()" [disabled]="downloadingPdf || loading" aria-label="Download PDF report">
+        <ion-spinner *ngIf="downloadingPdf" name="dots"></ion-spinner>
+        <ion-icon *ngIf="!downloadingPdf" slot="icon-only" name="document-text-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 

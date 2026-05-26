@@ -15,6 +15,7 @@ public interface IAppDbContext
     DbSet<Department> Departments { get; }
     DbSet<Invitation> Invitations { get; }
     DbSet<AuditLog> AuditLogs { get; }
+    DbSet<RecurringTransaction> RecurringTransactions { get; }
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

@@ -2,11 +2,18 @@
   <ion-toolbar>
     <ion-title>Activity</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="exportCsv()" [disabled]="!items.length" aria-label="Export CSV">
+        <ion-icon slot="icon-only" name="download-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="fileInput.click()" [disabled]="importing" aria-label="Import CSV">
+        <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
+      </ion-button>
       <ion-button (click)="openAdd()" aria-label="Add transaction">
         <ion-icon slot="icon-only" name="add-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
+  <input #fileInput type="file" accept=".csv,text/csv" style="display: none" (change)="onImportFile($event)" />
 
   <div class="filters-bar">
     <div class="seg-group">

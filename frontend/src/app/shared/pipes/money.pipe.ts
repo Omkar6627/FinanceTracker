@@ -1,14 +1,15 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { AuthService } from '../../core/auth/auth.service';
+import { CurrencyService } from '../../core/currency/currency.service';
 
 @Pipe({ name: 'money', standalone: false, pure: false })
 export class MoneyPipe implements PipeTransform {
-  constructor(private auth: AuthService) {}
+  constructor(private currency: CurrencyService) {}
 
   transform(value: number | null | undefined, opts: { sign?: boolean; abs?: boolean } = {}): string {
     if (value === null || value === undefined || isNaN(value)) return '—';
-    const currency = this.auth.currentUser()?.currency || 'USD';
-    const v = opts.abs ? Math.abs(value) : value;
+    const currency = this.currency.effectiveCurrency();
+    const rate = this.currency.rate();
+    const v = (opts.abs ? Math.abs(value) : value) * rate;
     const formatted = new Intl.NumberFormat(undefined, {
       style: 'currency',
       currency,

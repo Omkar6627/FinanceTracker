@@ -24,6 +24,11 @@ const routes: Routes = [
           import('../features/budgets/budgets.module').then((m) => m.BudgetsModule),
       },
       {
+        path: 'recurring',
+        loadChildren: () =>
+          import('../features/recurring/recurring.module').then((m) => m.RecurringModule),
+      },
+      {
         path: 'reports',
         loadChildren: () =>
           import('../features/reports/reports.module').then((m) => m.ReportsModule),

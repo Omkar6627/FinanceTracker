@@ -145,6 +145,14 @@
 
 .chevron { color: var(--ion-color-step-200); font-size: 16px; }
 
+.setting-row ion-select {
+  flex-shrink: 0;
+  max-width: 130px;
+  font-weight: 600;
+  --padding-start: 8px;
+}
+.setting-row ion-toggle { flex-shrink: 0; }
+
 .version {
   text-align: center;
   font-size: 12px;

@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { AlertController, ModalController, ToastController } from '@ionic/angular';
 import { ApiService } from '../../core/http/api.service';
 import {
   Category,
+  CsvImportResult,
   TransactionItem,
   TxType,
 } from '../../core/models/api.models';
@@ -32,7 +33,14 @@ export class TransactionsPage implements OnInit {
   pageSize = 30;
   total = 0;
 
-  constructor(private api: ApiService, private modalCtrl: ModalController) {}
+  importing = false;
+
+  constructor(
+    private api: ApiService,
+    private modalCtrl: ModalController,
+    private alertCtrl: AlertController,
+    private toastCtrl: ToastController,
+  ) {}
 
   ngOnInit(): void {
     this.api.listCategories().subscribe((c) => (this.categories = c));
@@ -140,6 +148,89 @@ export class TransactionsPage implements OnInit {
     await m.present();
     const { role } = await m.onDidDismiss();
     if (role === 'saved') this.reload();
+  }
+
+  exportCsv(): void {
+    this.api
+      .exportTransactionsCsv({
+        type: this.filterType === 'All' ? undefined : this.filterType,
+        categoryId: this.filterCategoryId ?? undefined,
+      })
+      .subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+          a.click();
+          URL.revokeObjectURL(url);
+        },
+        error: () => this.toast('Export failed', 'danger'),
+      });
+  }
+
+  onImportFile(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = ''; // allow re-selecting the same file later
+    if (!file) return;
+
+    this.importing = true;
+    this.api.importTransactionsCsv(file, false).subscribe({
+      next: (preview) => {
+        this.importing = false;
+        this.confirmImport(file, preview);
+      },
+      error: (e) => {
+        this.importing = false;
+        this.toast(e?.error?.message || 'Could not read CSV', 'danger');
+      },
+    });
+  }
+
+  private async confirmImport(file: File, preview: CsvImportResult): Promise<void> {
+    const valid = preview.totalRows - preview.failed;
+    const errorLines = preview.errors.slice(0, 5).map((e) => `Row ${e.row}: ${e.message}`).join('\n');
+    const more = preview.errors.length > 5 ? `\n…and ${preview.errors.length - 5} more` : '';
+
+    const alert = await this.alertCtrl.create({
+      header: 'Import preview',
+      cssClass: 'csv-import-alert',
+      message:
+        `${valid} of ${preview.totalRows} row(s) ready to import.` +
+        (preview.failed ? `\n\n${preview.failed} skipped:\n${errorLines}${more}` : ''),
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: valid > 0 ? `Import ${valid}` : 'Close',
+          role: valid > 0 ? 'confirm' : 'cancel',
+          handler: () => {
+            if (valid > 0) this.commitImport(file);
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private commitImport(file: File): void {
+    this.importing = true;
+    this.api.importTransactionsCsv(file, true).subscribe({
+      next: (r) => {
+        this.importing = false;
+        this.toast(`Imported ${r.imported} transaction(s)`, 'success');
+        this.reload();
+      },
+      error: () => {
+        this.importing = false;
+        this.toast('Import failed', 'danger');
+      },
+    });
+  }
+
+  private async toast(message: string, color: 'success' | 'danger'): Promise<void> {
+    const t = await this.toastCtrl.create({ message, duration: 2500, color, position: 'bottom' });
+    await t.present();
   }
 
   async openEdit(t: TransactionItem): Promise<void> {
